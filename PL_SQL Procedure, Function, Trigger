@@ -169,4 +169,67 @@ MILLER           1495     493.35
 
 ==================================================================================================
 
+1. Write trigger on employee table for insert, update and delete, make
+    appropriate entries in following table.
+    Create table emp_check(
+    Empid number;
+    Ename varchar2(20),
+    Oldsal number(9,2),
+    Newsal number(9,2),
+    Uname varchar2(20),
+    Chk_date date);
+
+
+  1  Create table emp_check(
+  2  Empid number,
+  3  Ename varchar2(20),
+  4  Oldsal number(9,2),
+  5  Newsal number(9,2),
+  6  Uname varchar2(20),
+  7* Chk_date date)
+SQL> /
+
+Table created.
+
+
+
+  1  create or replace trigger emp_trig
+  2  after insert or update or delete on emp
+  3  for each row
+  4  begin
+  5  if inserting then
+  6     insert into emp_check values(
+  7     :new.empno, :new.ename, null, :new.sal, user, sysdate);
+  8  elsif updating then
+  9     insert into emp_check values(
+ 10     :new.empno, :new.ename, :old.sal, :new.sal, user, sysdate);
+ 11  else
+ 12     insert into emp_check values(
+ 13     :old.empno, :old.ename, :old.sal, null, user, sysdate);
+ 14  end if;
+ 15* end;
+SQL> /
+
+Trigger created.
+
+
+insert into emp values(10,'Ganesh','CEO','7369',sysdate,45945, 4595, 30, 24682347);
+
+1 row created.
+
+SQL> update emp set sal = 5679 where ename= 'Ganesh';
+
+1 row updated.
+
+SQL> delete from emp where ename ='Ganesh';
+
+1 row deleted.
+
+SQL> select * from emp_check;
+
+     EMPID ENAME                    OLDSAL     NEWSAL UNAME                CHK_DATE
+---------- -------------------- ---------- ---------- -------------------- ---------
+        10 Ganesh                               45945 DBDA16               31-OCT-23
+        10 Ganesh                    45945       5679 DBDA16               31-OCT-23
+        10 Ganesh                     5679            DBDA16               31-OCT-23
 
