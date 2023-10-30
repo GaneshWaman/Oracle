@@ -1,0 +1,172 @@
+Write a procedure for the following.
+------------------------------------
+
+1. To accept employee number, delete the record of the given employee.
+
+
+  1  create or replace procedure del_data(eno number)
+  2  as
+  3  begin
+  4  delete from emp where empno=eno;
+  5* end;
+SQL> /
+
+Procedure created.
+
+SQL> select * from emp;
+
+     EMPNO ENAME      JOB                    MGR HIREDATE         SAL       COMM     DEPTNO     NETSAL
+---------- ---------- --------------- ---------- --------- ---------- ---------- ---------- ----------
+      7369 SMITH      CLERK                 7902 17-DEC-80        800                    20       1000
+      7499 ALLEN      SALESMAN              7698 20-FEB-81       1495        300         30       1000
+      7521 WARD       SALESMAN              7698 22-FEB-81       1495        500         30       1000
+      7566 JONES      MANAGER               7839 02-APR-81       2975                    20       1000
+      7654 MARTIN     SALESMAN              7698 28-SEP-81       1495       1400         30       1000
+      7698 BLAKE      MANAGER               7839 01-MAY-81       1495                    30       1000
+      7782 CLARK      MANAGER               7777 09-JUN-81     2817.5                    10       1000
+      7788 SCOTT      ANALYST               7566 09-DEC-82       3000                    20       1000
+      7839 KING       MANAGER               7777 17-NOV-81       5750                    10       1000
+      7844 TURNER     SALESMAN              7698 08-SEP-81       1495          0         30       1000
+      7876 ADAMS      CLERK                 7788 12-JAN-83       1100                    20       1000
+      7900 JAMES      CLERK                 7698 03-DEC-81       1495                    30       1000
+      7902 FORD       ANALYST               7566 03-DEC-81       3000                    20       1000
+      7934 MILLER     MANAGER               7777 23-JAN-82       1495                    10       1000
+        10 Ganesh     CEO                   7369 30-OCT-23      45945       4595         30   24682347
+
+15 rows selected.
+
+SQL> set serveroutput on;
+SQL> execute del_data(10);
+
+PL/SQL procedure successfully completed.
+
+SQL> select * from emp;
+
+     EMPNO ENAME      JOB                    MGR HIREDATE         SAL       COMM     DEPTNO     NETSAL
+---------- ---------- --------------- ---------- --------- ---------- ---------- ---------- ----------
+      7369 SMITH      CLERK                 7902 17-DEC-80        800                    20       1000
+      7499 ALLEN      SALESMAN              7698 20-FEB-81       1495        300         30       1000
+      7521 WARD       SALESMAN              7698 22-FEB-81       1495        500         30       1000
+      7566 JONES      MANAGER               7839 02-APR-81       2975                    20       1000
+      7654 MARTIN     SALESMAN              7698 28-SEP-81       1495       1400         30       1000
+      7698 BLAKE      MANAGER               7839 01-MAY-81       1495                    30       1000
+      7782 CLARK      MANAGER               7777 09-JUN-81     2817.5                    10       1000
+      7788 SCOTT      ANALYST               7566 09-DEC-82       3000                    20       1000
+      7839 KING       MANAGER               7777 17-NOV-81       5750                    10       1000
+      7844 TURNER     SALESMAN              7698 08-SEP-81       1495          0         30       1000
+      7876 ADAMS      CLERK                 7788 12-JAN-83       1100                    20       1000
+      7900 JAMES      CLERK                 7698 03-DEC-81       1495                    30       1000
+      7902 FORD       ANALYST               7566 03-DEC-81       3000                    20       1000
+      7934 MILLER     MANAGER               7777 23-JAN-82       1495                    10       1000
+
+14 rows selected.
+===============================================================================================================================
+
+2.	To accept grade, losal and hisal and insert a record into salgrad table
+
+  1  create or replace procedure insert_data(grd number, lsal number, hsal number)
+  2  as
+  3  begin
+  4  insert into salgrade values(grd,lsal,hsal);
+  5* end;
+SQL> /
+
+Procedure created.
+
+SQL> execute insert_data(22,100,1000)
+
+PL/SQL procedure successfully completed.
+
+SQL> select * from salgrade;
+
+     GRADE      LOSAL      HISAL
+---------- ---------- ----------
+         1        700       1200
+         2       1201       1400
+         3       1401       2000
+         4       2001       3000
+         5       3001       9999
+        12       3343       4546
+        22        100       1000
+
+7 rows selected.
+=====================================================================================================================================
+
+2. Write functions to perform the following.
+---------------------------------------------
+
+1.	Calculate experience of the employee
+
+  1  create or replace function cal_exp(dt date)
+  2  return number
+  3  as
+  4  begin
+  5  return
+  6  floor(months_between(sysdate,dt)/12);
+  7* end;
+SQL> /
+
+Function created.
+
+SQL> select ename, empno,hiredate, cal_exp(hiredate) from emp;
+
+ENAME           EMPNO HIREDATE  CAL_EXP(HIREDATE)
+---------- ---------- --------- -----------------
+SMITH            7369 17-DEC-80                42
+ALLEN            7499 20-FEB-81                42
+WARD             7521 22-FEB-81                42
+JONES            7566 02-APR-81                42
+MARTIN           7654 28-SEP-81                42
+BLAKE            7698 01-MAY-81                42
+CLARK            7782 09-JUN-81                42
+SCOTT            7788 09-DEC-82                40
+KING             7839 17-NOV-81                41
+TURNER           7844 08-SEP-81                42
+ADAMS            7876 12-JAN-83                40
+JAMES            7900 03-DEC-81                41
+FORD             7902 03-DEC-81                41
+MILLER           7934 23-JAN-82                41
+
+14 rows selected.
+==========================================================================================================
+
+2.	To calculate net sal by using formula.
+    Netsal=sal+da+hra-pf+comm
+    Da-→ 10% sal, hra→ 15% sal, pf --→ 8 % of sal
+
+
+  1  create or replace function cal_netsal(empsal number)
+  2  return number
+  3  as
+  4  begin
+  5  return
+  6  round((0.1*empsal + 0.15*empsal + 0.08*empsal),2);
+  7* end;
+SQL> /
+
+Function created.
+
+SQL> select ename, sal, cal_netsal(sal) netsal from emp;
+
+ENAME             SAL     NETSAL
+---------- ---------- ----------
+SMITH             800        264
+ALLEN            1495     493.35
+WARD             1495     493.35
+JONES            2975     981.75
+MARTIN           1495     493.35
+BLAKE            1495     493.35
+CLARK          2817.5     929.78
+SCOTT            3000        990
+KING             5750     1897.5
+TURNER           1495     493.35
+ADAMS            1100        363
+JAMES            1495     493.35
+FORD             3000        990
+MILLER           1495     493.35
+
+14 rows selected.
+
+==================================================================================================
+
+
