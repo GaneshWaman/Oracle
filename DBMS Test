@@ -1,0 +1,257 @@
+TEST
+====
+
+MongoDB
+=======
+1) db.restaurent.find({'address.coord':{$type:'double'}})
+
+2) db.restaurent.find({'grades.score':{$lte:10}},{restaurant_id:1,name:1,borough:1,cuisine:1})
+
+3) db.restaurent.find({borough:'Bronx',cuisine:{$in:['American','Chinese']}},{cuisine:1})
+
+===========================================================================================================
+Oracle SQL
+==========
+create table product(
+productid number primary key,
+productcode number,
+name varchar2(20),
+quantity number,
+price number,
+manufacturing date,
+supplierid number,
+constraint fk_pro foreign key(supplierid) references suppliers(supplierid)) 
+
+
+insert into suppliers values(501,'ABC Traders', 88881111);
+insert into suppliers values(502,'Vikas', 88882222);
+insert into suppliers values(503,'Vijay sales', 88883333);
+insert into suppliers values(505,'Raymond', 88885555);
+
+insert into products values(1001, 'PEN','Pen Red', 5000, 1.23, to_date('02-02-1995','dd-mm-yyyy'), 501);
+insert into products values(1002, 'PEN','Pen Blue', 8000, 1.25, to_date('01-05-2000','dd-mm-yyyy'), 501);
+insert into products values(1003, 'PEN','Pen Black', 2000, 1.25, to_date('10-06-1999','dd-mm-yyyy'), 502);
+insert into products values(1004, 'PEC','Pencil 2B', 10000, 0.48, to_date('05-05-1997','dd-mm-yyyy'), 502);
+insert into products values(1005, 'PEC','Pencil 2H', 8000, 0.49, to_date('03-04-1995','dd-mm-yyyy'), 503);
+
+1)
+select p.productcode , s.name from products p, suppliers s where p.supplierid=s.supplierid and s.name not in ('Vikas');
+select p.productcode , s.name from products p, suppliers s where p.supplierid=s.supplierid and s.name not in ('Vikas');
+
+PRODUCTCODE          NAME
+-------------------- --------------------
+PEN                  ABC Traders
+PEN                  ABC Traders
+PEC                  Vijay sales
+
+2)
+select max(price), min(price), sum(quantity*price) from products group by supplierid having sum(quantity*price) >10000;
+
+MAX(PRICE) MIN(PRICE) SUM(QUANTITY*PRICE)
+---------- ---------- -------------------
+      1.25       1.23               16150
+3)
+alter table products rename column manufacturing to created;
+ desc products;
+ Name                                                              Null?    Type
+ ----------------------------------------------------------------- -------- --------------------------------------------
+ PRODUCTID                                                         NOT NULL NUMBER
+ PRODUCTCODE                                                                VARCHAR2(20)
+ NAME                                                                       VARCHAR2(20)
+ QUANTITY                                                                   NUMBER
+ PRICE                                                                      NUMBER
+ CREATED                                                                    DATE
+ SUPPLIERID                                                                 NUMBER
+
+4)
+  1  select * from products
+  2  where extract(month from created)='05'
+  3  and extract(year from created)='1997'
+  4* and (quantity >=10000 or quantity <2500)
+SQL> /
+
+ PRODUCTID PRODUCTCODE          NAME                   QUANTITY      PRICE CREATED   SUPPLIERID
+---------- -------------------- -------------------- ---------- ---------- --------- ----------
+      1004 PEC                  Pencil 2B                 10000        .48 05-MAY-97        502
+
+5)
+select * from products p, suppliers s where p.supplierid=s.supplierid and price <0.6;
+
+ PRODUCTID PRODUCTCODE          NAME                   QUANTITY      PRICE CREATED   SUPPLIERID SUPPLIERID NAME                      PHONE
+---------- -------------------- -------------------- ---------- ---------- --------- ---------- ---------- -------------------- ----------
+      1004 PEC                  Pencil 2B                 10000        .48 05-MAY-97        502        502 Vikas                  88882222
+      1005 PEC                  Pencil 2H                  8000        .49 03-APR-95        503        503 Vijay sales            88883333
+
+6)
+SQL> select productcode, sum(quantity*price) total_price from products group by productcode;
+
+PRODUCTCODE          TOTAL_PRICE
+-------------------- -----------
+PEC                         8720
+PEN                        18650
+
+7)
+select * from products p full join suppliers s on p.supplierid=s.supplierid where p.productid is null;
+
+ PRODUCTID PRODUCTCODE          NAME                   QUANTITY      PRICE CREATED   SUPPLIERID SUPPLIERID NAME                      PHONE
+---------- -------------------- -------------------- ---------- ---------- --------- ---------- ---------- -------------------- ----------
+                                                                                                       505 Raymond                88885555
+
+
+
+
+
+
+PL/SQL
+================================================
+
+  1  create or replace function ttl_price(qty number, price number)
+  2  return number
+  3   as
+  4   total number(10,2);
+  5  begin
+  6  if price < 0.5 then
+  7     return (qty*price);
+  8  elsif price >= 0.5 then
+  9     return ((price+(0.1*price + 0.1*price))*qty);
+ 10  else
+ 11     return ((price+(0.15*price + 0.2*price))*qty);
+ 12  end if;
+ 13* end;
+SQL> /
+
+Function created.
+
+SQL> select name, ttl_price(quantity, price) from products;
+
+NAME                 TTL_PRICE(QUANTITY,PRICE)
+-------------------- -------------------------
+Pen Red                                   7380
+Pen Blue                                 12000
+Pen Black                                 3000
+Pencil 2B                                 4800
+Pencil 2H                                 3920
+
+
+
+3)
+  1  create or replace function ttl_price(qty number, price number)
+  2  return number
+  3   as
+  4   total number(10,2);
+  5  begin
+  6  if price < 0.5 then
+  7     return (qty*price);
+  8  elsif price >= 0.5 then
+  9     return ((price+(0.1*price + 0.1*price))*qty);
+ 10  else
+ 11     return ((price+(0.15*price + 0.2*price))*qty);
+ 12  end if;
+ 13* end;
+SQL> /
+
+Function created.
+
+SQL> select name, ttl_price(quantity, price) from products;
+
+NAME                 TTL_PRICE(QUANTITY,PRICE)
+-------------------- -------------------------
+Pen Red                                   7380
+Pen Blue                                 12000
+Pen Black                                 3000
+Pencil 2B                                 4800
+Pencil 2H                                 3920
+
+
+4)
+SQL> create table newproduct as(select * from products);
+
+Table created.
+
+SQL> select * from newproduct
+  2  /
+
+ PRODUCTID PRODUCTCODE          NAME                   QUANTITY      PRICE CREATED   SUPPLIERID
+---------- -------------------- -------------------- ---------- ---------- --------- ----------
+      1001 PEN                  Pen Red                    5000       1.23 02-FEB-95        501
+      1002 PEN                  Pen Blue                   8000       1.25 01-MAY-00        501
+      1003 PEN                  Pen Black                  2000       1.25 10-JUN-99        502
+      1004 PEC                  Pencil 2B                 10000        .48 05-MAY-97        502
+      1005 PEC                  Pencil 2H                  8000        .49 03-APR-95        503
+
+SQL> desc new product
+Usage: DESCRIBE [schema.]object[@db_link]
+SQL> desc newproduct;
+ Name                                                                                                                                                                          Null?    Type
+ ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- -------- --------------------------------------------------------------------------------------------------------------------
+ PRODUCTID                                                                                                                                                                              NUMBER
+ PRODUCTCODE                                                                                                                                                                            VARCHAR2(20)
+ NAME                                                                                                                                                                                   VARCHAR2(20)
+ QUANTITY                                                                                                                                                                               NUMBER
+ PRICE                                                                                                                                                                                  NUMBER
+ CREATED                                                                                                                                                                                DATE
+ SUPPLIERID                                                                                                                                                                             NUMBER
+
+SQL> create table prod_supp(productid number, productname varchar2(20),oldprice number(9,2), newprice number(9,2),manufacturing date,sup_name varchar2(20))
+  2  /
+
+Table created.
+
+SQL> desc prod_supp;
+ Name
+                                       Null?    Type
+ ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- -------- --------------------------------------------------------------------------------------------------------------------
+ PRODUCTID
+                                                NUMBER
+ PRODUCTNAME
+                                                VARCHAR2(20)
+ OLDPRICE
+                                                NUMBER(9,2)
+ NEWPRICE
+                                                NUMBER(9,2)
+ MANUFACTURING
+                                                DATE
+ SUP_NAME
+                                                VARCHAR2(20)
+
+
+4)
+
+
+  1  create or replace trigger monitor_prod
+  2  after update on newproduct
+  3  for each row
+  4  begin
+  5  insert into prod_supp values(:old.productid,:new.name,:old.price,:new.price,:new.created,:new.s_name);
+  6* end;
+  7  /
+
+Trigger created.
+   
+ERROR at line 1:
+ORA-00903: invalid table name
+
+
+SQL> ed
+Wrote file afiedt.buf
+
+
+SQL> select * from newproduct;
+
+ PRODUCTID PRODUCTCODE          NAME                   QUANTITY      PRICE CREATED   SUPPLIERID S_NAME
+---------- -------------------- -------------------- ---------- ---------- --------- ---------- --------------------
+      1001 PEN                  Pen Red                    5000       1.23 02-FEB-95        501 ABC Traders
+      1002 PEN                  Pen Blue                   8000       1.25 01-MAY-00        501 ABC Traders
+      1003 PEN                  Pen Black                  2000       1.25 10-JUN-99        502 Vikas
+      1004 PEC                  Pencil 2B                 10000        .48 05-MAY-97        502 Vikas
+      1005 PEC                  Pencil 2H                  8000        .49 03-APR-95        503 Vijay sales
+
+SQL> update newproduct set price = 2.5 where productid = 1001;
+
+1 row updated.
+
+SQL> select * from prod_supp;
+
+ PRODUCTID PRODUCTNAME            OLDPRICE   NEWPRICE MANUFACTU SUP_NAME
+---------- -------------------- ---------- ---------- --------- --------------------
+      1001 Pen Red                    1.23        2.5 02-FEB-95 ABC Traders
