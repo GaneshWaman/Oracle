@@ -1,0 +1,310 @@
+ Assignments(PLSQL)
+=======================
+1. Write a procedure for the following.
+=============================================
+a. To accept employee number , delete the record of the given
+Employee.
+  create or replace procedure add_rec (enum in number)
+  as
+  begin
+  delete emp where empno=enum;
+  end;
+
+
+execute add_rec(1234); 
+—-----------------------------------------------------------------------------------------------------------
+
+b. To accept grade,losal and hisal and insert a record into salgrad table
+=============================================================================
+create or replace procedure add_record(a_grade in number, a_losal in number, a_hisal in number)
+as
+begin
+insert into salgrade values(a_grade, a_losal, a_hisal);
+end;
+
+
+Procedure created.
+
+execute add_record(6, 1230, 4000); 
+
+GRADE
+LOSAL
+HISAL
+6
+1230
+4000
+1
+700
+1200
+2
+1201
+1400
+3
+1401
+2000
+4
+2001
+3000
+5
+3001
+9999
+
+
+
+2. Write functions to perform the following.
+===========================================
+a. Calculate experience of the employee
+=========================================
+create or replace function emp_exp(hdt date)
+return number
+as
+begin
+return
+floor(months_between(sysdate,hdt)/12) as experience from emp;
+end;
+
+Function created.
+
+select Ename, empno, emp_exp(hiredate) from emp; 
+
+
+
+ENAME
+EMPNO
+EMP_EXP(HIREDATE)
+SMITH
+7369
+42
+ALLEN
+7499
+42
+WARD
+7521
+42
+JONES
+7566
+42
+MARTIN
+7654
+42
+BLAKE
+7698
+42
+CLARK
+7782
+42
+SCOTT
+7788
+40
+KING
+7839
+41
+TURNER
+7844
+42
+ADAMS
+7876
+40
+JAMES
+7900
+41
+FORD
+7902
+41
+MILLER
+7934
+41
+
+
+=========================================
+b. To calculate net sal by using formula.
+Netsal=sal+da+hra-pf+comm
+Da-→ 10% sal hra→ 15% sal pf --→ 8 % of sal
+==============================================
+
+
+create or replace function netsal(salary number,com number)
+return number
+as
+begin
+return
+(salary+(0.1*salary)+(0.15*salary)+(0.08*salary)+nvl(com,0));
+end;
+
+
+Function created.
+
+/
+select Ename, empno,sal, netsal(sal, comm) netsal from emp; 
+
+
+ENAME
+EMPNO
+SAL
+NETSAL
+SMITH
+7369
+800
+1064
+ALLEN
+7499
+1600
+2428
+WARD
+7521
+1250
+2162.5
+JONES
+7566
+2975
+3956.75
+MARTIN
+7654
+1250
+3062.5
+BLAKE
+7698
+2850
+3790.5
+CLARK
+7782
+2450
+3258.5
+SCOTT
+7788
+3000
+3990
+KING
+7839
+5000
+6650
+TURNER
+7844
+1500
+1995
+ADAMS
+7876
+1100
+1463
+JAMES
+7900
+950
+1263.5
+FORD
+7902
+3000
+3990
+MILLER
+7934
+1300
+1729
+
+
+
+Loops example
+1. Print the following patterns using loop :
+a.
+*
+**
+***
+****
+=============================================
+create or replace procedure pattern1
+as
+num number:=4;
+begin
+
+for i in 1..num
+loop
+	for j in 1..i
+loop
+		DBMS_OUTPUT.PUT('*');
+	END LOOP;
+DBMS_OUTPUT.new_line;
+END LOOP;
+END;
+
+Procedure created.
+
+EXECUTE pattern1();
+
+Statement processed.
+*
+**
+***
+****
+
+
+==================================
+b.
+*
+***
+*****
+***
+*
+
+
+c.
+1010101
+10101
+101
+1
+
+
+
+d.
+1
+1 2
+1 2 3
+1 2 3 4
+1 2 3 4 5
+
+
+
+=========================================================================
+3. Write trigger on employee table for insert, update and delete, make
+appropriate entries in following table.
+========================================================================
+
+Create table emp_check(
+Empid number;
+Ename varchar2(20),
+Oldsal number(9,2),
+Newsal number(9,2),
+Uname varchar2(20),
+Chk_date date);
+
+
+SQL> desc emp_check;
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ EMPNO                                              NUMBER
+ OLDNAME                                            VARCHAR2(15)
+ NEWNAME                                            VARCHAR2(15)
+ OLDSAL                                             NUMBER
+ NEWSAL                                             NUMBER
+ ACTION                                             VARCHAR2(10)
+ UNAME                                              VARCHAR2(10)
+ CHK_DATE                                           DATE
+ CHK_TIME                                           TIMESTAMP(6)
+
+
+  1  create or replace trigger monitor_employee
+  2  after insert or delete or update on emp
+  3  for each row
+  4  begin
+  5     if inserting then
+  6             insert into emp_check values
+  7             (:new.empno, null, :new.ename, null, :new.sal, 'Insert', user, sysdate, current_timestamp);
+  8     elsif deleting then
+  9             insert into emp_check values
+ 10             (:old.empno, :old.ename, null, :old.sal, null, 'Delete', user, sysdate, current_timestamp);
+ 11     else
+ 12             insert into emp_check values
+ 13             (:old.empno, :old.ename, :new.ename, :old.sal, :new.sal, 'Delete', user, sysdate, current_timestamp);
+ 14     end if;
+ 15* end;
+SQL> /
+
+Trigger created.
+
