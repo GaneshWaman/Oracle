@@ -105,20 +105,18 @@ select * from products p full join suppliers s on p.supplierid=s.supplierid wher
 PL/SQL
 ================================================
 
-  1  create or replace function ttl_price(qty number, price number)
-  2  return number
-  3   as
-  4   total number(10,2);
-  5  begin
-  6  if price < 0.5 then
-  7     return (qty*price);
-  8  elsif price >= 0.5 then
-  9     return ((price+(0.1*price + 0.1*price))*qty);
- 10  else
- 11     return ((price+(0.15*price + 0.2*price))*qty);
- 12  end if;
- 13* end;
-SQL> /
+   create or replace function ttl_price(qty number, price number)
+    return number
+     as
+    begin
+    if price < 0.5 then
+       return (qty*price);
+    elsif(price<=1.25 and price >= 0.5 )then
+       return ((price+(0.1*price + 0.1*price))*qty);
+	else
+	return ((price+(0.15*price + 0.2*price))*qty);
+	end if;
+	end;
 
 Function created.
 
