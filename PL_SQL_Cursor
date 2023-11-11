@@ -12,8 +12,12 @@ BEGIN
 		DBMS_OUTPUT.PUT_LINE('EMPID '|| v_empid || 'ENAME' || v_ename);
 	END LOOP;
 	CLOSE emp_cursor;
+EXCEPTION
+	WHEN OTHERS THEN
+		DBMS_OUTPUT.PUT_LINE('Error - ' || sqlerrm);
 END; 
 /
+
 
 
 PL/SQL procedure successfully completed.
