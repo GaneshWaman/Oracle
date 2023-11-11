@@ -1,0 +1,19 @@
+DECLARE
+	v_empid emp.empno%type;
+	v_ename emp.ename%type;
+	cursor emp_cursor
+IS
+select empno, ename from emp;
+BEGIN
+	open emp_cursor;
+	for i in 1..10
+	LOOP
+		Fetch emp_cursor into v_empid, v_ename;
+		DBMS_OUTPUT.PUT_LINE('EMPID '|| v_empid || 'ENAME' || v_ename);
+	END LOOP;
+	CLOSE emp_cursor;
+END; 
+/
+
+
+PL/SQL procedure successfully completed.
